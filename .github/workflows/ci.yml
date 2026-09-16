@@ -42,6 +42,9 @@ jobs:
       - name: Test
         run: npm run test
 
+      - name: Build Chrome and Firefox
+        run: npm run build && npm run build:firefox
+
   coverage:
     name: Coverage
     runs-on: ubuntu-latest

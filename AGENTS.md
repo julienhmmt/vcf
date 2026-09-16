@@ -17,9 +17,9 @@ changing it means rewriting the index builder and matcher together).
 
 ## Status
 
-Early development. Core matching (`src/core/`) is implemented and tested.
-Everything else — Vault client, service worker, UI, content script — is not
-yet built. Check the Roadmap section of `README.md` for current progress
+Early development. Core matching (`src/core/`), the Vault client
+(`src/vault/`) and the service worker (`src/background/`) are implemented
+and tested. UI and content script are not built yet. Check the Roadmap section of `README.md` for current progress
 before assuming a piece exists.
 
 ## Layout
@@ -32,7 +32,9 @@ src/core/       # no browser, no network — pure domain logic
   credential.ts, renewal.ts
 src/vault/      # Vault/OpenBao HTTP client — implemented
   client.ts, http.ts, auth.ts, oidc.ts, kv.ts, mounts.ts, indexer.ts, errors.ts
-src/background/ # MV3 service worker (planned)
+src/background/ # MV3 service worker logic — implemented; browser APIs only
+                #   in browser-platform.ts, everything else behind Platform
+src/entrypoints/# WXT entrypoints (background.ts)
 src/ui/         # Svelte popup / options / setup wizard (planned)
 src/content/    # form-detection + fill content script (planned)
 docs/
@@ -53,10 +55,14 @@ npm run typecheck
 npm run test            # vitest run
 npm run test:watch
 npm run test:coverage
+npm run test:integration   # needs dev/docker-compose.yml up
+npm run build              # WXT, Chrome MV3; build:firefox for Firefox
 ```
 
-CI (`.github/workflows/ci.yml` once moved into place — see Known gaps below)
-runs on Node 22 and 24 and enforces coverage thresholds on `src/`.
+CI (`.github/workflows/ci.yml`) runs on Node 22 and 24, builds both
+browsers, enforces coverage thresholds on `src/`, and runs the integration
+suite against Vault and OpenBao. Build tooling is WXT (dev dependency only).
+Message protocol: `docs/messaging.md`.
 
 ## Skills
 

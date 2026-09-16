@@ -3,12 +3,18 @@
   "version": "0.0.0",
   "description": "Autofill credentials from HashiCorp Vault and OpenBao",
   "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip && wxt zip -b firefox",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run test",
-    "test:integration": "vitest run --config vitest.integration.config.ts"
+    "postinstall": "wxt prepare"
   },
   "keywords": [],
   "author": "",
@@ -17,7 +23,8 @@
     "@types/node": "^22.20.3",
     "@vitest/coverage-v8": "^5.0.1",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.1",
+    "wxt": "^0.21.4"
   },
   "dependencies": {
     "tldts": "^7.4.13"

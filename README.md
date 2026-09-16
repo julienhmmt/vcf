@@ -14,8 +14,9 @@ with your own Vault as the backend.
 - Chrome and Firefox, Manifest V3
 - kv-v1 and kv-v2; userpass, AppRole, OIDC or a raw token
 
-> **Status: early development.** The matching core and the Vault
-> client are implemented and tested. There is no usable extension yet.
+> **Status: early development.** The matching core, the Vault client
+> and the service worker are implemented and tested. There is no UI
+> yet, so the extension cannot be used interactively.
 
 ## How a secret is tagged
 
@@ -49,14 +50,23 @@ src/vault/        # Vault / OpenBao HTTP client, fetch only
   kv.ts             kv-v1 / kv-v2 list, metadata, data, tree walk
   indexer.ts        mount → index entries (metadata only)
   client.ts         VaultClient / SessionClient facade
+src/background/   # service worker logic, browser behind an interface
+  platform.ts       what the worker needs from the browser
+  browser-platform.ts  the real binding (wxt/browser)
+  config.ts         setup validation
+  stores.ts         storage split: session vs local
+  service.ts        unlock, renew, idle lock, index, match, fill
+  router.ts         message protocol and sender checks
+src/entrypoints/  # WXT entrypoints
+  background.ts
 test/integration/ # against real servers, see below
 dev/              # docker compose + seed fixtures
 docs/
   secret-schema.md
 ```
 
-Neither `src/core` nor `src/vault` touches an extension API: both
-run under Node and are tested without a browser. The client only
+Only `browser-platform.ts` and the entrypoints touch extension APIs;
+everything else runs under Node and is tested without a browser. The client only
 needs `fetch` and `AbortSignal.any` (Chrome 116+, Firefox 124+).
 
 ## Development
@@ -66,7 +76,13 @@ npm install
 npm run check          # typecheck + tests, what CI runs
 npm run test:watch     # vitest in watch mode
 npm run test:coverage
+npm run build          # .output/chrome-mv3
+npm run build:firefox  # .output/firefox-mv3
+npm run dev            # Chrome with live reload
 ```
+
+The message protocol between UI, content script and worker is in
+[`docs/messaging.md`](docs/messaging.md).
 
 CI runs typecheck and tests on Node 22 and 24, enforces coverage
 thresholds on `src/`, and runs the integration suite against both
@@ -106,7 +122,9 @@ it needs an IdP and is covered by unit tests only.
 2. **Vault client** — done: auth (token / userpass / LDAP / AppRole /
    OIDC), mount discovery, kv-v1 and kv-v2 list and read, token
    renewal, ACL-aware indexing
-3. **Service worker** — storage split, index lifecycle, alarms
+3. **Service worker** — done: storage split, index lifecycle,
+   renewal / expiry / idle-lock alarms, sender-checked messaging,
+   downgrade-checked fill with TOTP computed in the worker
 4. **Setup wizard and picker** — Svelte
 5. **Content script** — form detection and fill
 6. **Hardening** — lock timeout, fill confirmation, scheme-downgrade
