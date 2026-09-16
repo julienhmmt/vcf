@@ -154,6 +154,28 @@ Versions are pinned in the compose file and can be overridden with
 `VAULT_VERSION` / `OPENBAO_VERSION`. OIDC is not part of the stack:
 it needs an IdP and is covered by unit tests only.
 
+#### Testing the extension itself, end to end
+
+1. `npm run build` (or `build:firefox`), then load `.output/chrome-mv3`
+   as an unpacked extension (`chrome://extensions` → Developer mode →
+   Load unpacked) or `.output/firefox-mv3` via `about:debugging` →
+   "Load Temporary Add-on".
+2. Bring up Vault/OpenBao and seed it (above).
+3. Open the extension's options page and connect: address
+   `http://127.0.0.1:8200` (or `:8300` for OpenBao), auth method
+   userpass, username `vcf`, password `vcf` when prompted — grant the
+   host permission when Chrome/Firefox asks.
+4. `npm run dev:test-page` serves `dev/test-page/index.html` at
+   `http://localhost:8080`, matching the `secret/perso/local-test`
+   fixture seed.sh already tags for exactly that address. Open it: the
+   in-page badge should appear next to the password field, and the
+   popup's picker should list it for the active tab.
+5. Vault has more path/host fixtures than that one page can exercise
+   (subdomain and domain-quality matches, TOTP, a metadata-only-
+   readable secret that 403s on fill, a soft-deleted one) — see the
+   `put`/`meta` calls in `dev/seed/seed.sh` for the full list and what
+   each is meant to prove.
+
 ## Roadmap
 
 1. **Core matching** — done
