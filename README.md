@@ -14,9 +14,10 @@ with your own Vault as the backend.
 - Chrome and Firefox, Manifest V3
 - kv-v1 and kv-v2; userpass, AppRole, OIDC or a raw token
 
-> **Status: early development.** The matching core, the Vault client
-> and the service worker are implemented and tested. There is no UI
-> yet, so the extension cannot be used interactively.
+> **Status: early development.** The matching core, the Vault client,
+> the service worker and the Svelte UI (popup, setup wizard, settings)
+> are implemented and tested. There is no content script yet, so
+> fills cannot be triggered from a real page.
 
 ## How a secret is tagged
 
@@ -57,8 +58,13 @@ src/background/   # service worker logic, browser behind an interface
   stores.ts         storage split: session vs local
   service.ts        unlock, renew, idle lock, index, match, fill
   router.ts         message protocol and sender checks
+src/ui/           # Svelte helpers shared by popup and options
+  lib/              messaging, typed RPC calls, formatting, wizard draft
+  components/       Unlock.svelte (shared login form)
 src/entrypoints/  # WXT entrypoints
   background.ts
+  popup/            App.svelte, Picker.svelte (candidate list, fill)
+  options/          App.svelte, Wizard.svelte (setup), Settings.svelte
 test/integration/ # against real servers, see below
 dev/              # docker compose + seed fixtures
 docs/
@@ -125,7 +131,10 @@ it needs an IdP and is covered by unit tests only.
 3. **Service worker** — done: storage split, index lifecycle,
    renewal / expiry / idle-lock alarms, sender-checked messaging,
    downgrade-checked fill with TOTP computed in the worker
-4. **Setup wizard and picker** — Svelte
+4. **Setup wizard and picker** — done: Svelte 5 popup and options
+   pages, message-based RPC to the worker (never calling Vault
+   directly), non-secret wizard draft persistence, permission
+   request flow for the Vault host
 5. **Content script** — form detection and fill
 6. **Hardening** — lock timeout, fill confirmation, scheme-downgrade
    warnings

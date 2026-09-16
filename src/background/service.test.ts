@@ -112,6 +112,13 @@ describe('configuration', () => {
     await expect(service.probe(ADDRESS)).rejects.toMatchObject({ kind: 'host_permission' })
   })
 
+  test('getConfig mirrors what was saved, null when absent', async () => {
+    const { service } = setup()
+    expect(await service.getConfig()).toBeNull()
+    await service.saveConfig(userpassConfig)
+    expect(await service.getConfig()).toMatchObject({ address: ADDRESS, auth: { method: 'userpass' } })
+  })
+
   test('saves and schedules the refresh', async () => {
     const { service, platform } = setup()
     const status = await service.saveConfig(userpassConfig)

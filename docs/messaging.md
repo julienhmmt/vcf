@@ -27,6 +27,7 @@ There is no `onMessageExternal` listener and there must never be one.
 |--------|------|---------|---------|
 | `status` | page, content | — | full `Status` for pages; `{ configured, unlocked }` for content |
 | `probe` | page | `address`, `namespace?` | server health |
+| `config/get` | page | — | current config (non-secret), or `null` |
 | `config/save` | page | `config` (see `config.ts`) | `Status` |
 | `login` | page | `input`: `{method:'token',token}` · `{method:'userpass'\|'ldap',password}` · `{method:'approle',secretId}` · `{method:'oidc'}` | `Status` |
 | `logout` | page | — | revokes, clears session and index |

@@ -17,6 +17,7 @@ const content: Sender = {
 function deps() {
   const service = {
     status: vi.fn(async () => ({ configured: true, unlocked: false, address: 'https://v', index: {} })),
+    getConfig: vi.fn(async () => ({ address: 'https://v', auth: { method: 'token' } })),
     probe: vi.fn(async () => ({ sealed: false })),
     saveConfig: vi.fn(async () => 'saved'),
     login: vi.fn(async () => 'in'),
@@ -81,6 +82,10 @@ describe('route', () => {
     expect(service.probe).toHaveBeenLastCalledWith('https://v', undefined)
     await route(d, { type: 'config/save', config: { a: 1 } }, page)
     expect(service.saveConfig).toHaveBeenCalledWith({ a: 1 })
+    expect(await route(d, { type: 'config/get' }, page)).toEqual({
+      ok: true,
+      value: { address: 'https://v', auth: { method: 'token' } },
+    })
     await route(d, { type: 'logout' }, page)
     await route(d, { type: 'lock' }, page)
     expect(service.lock).toHaveBeenCalledWith('user')
@@ -89,7 +94,7 @@ describe('route', () => {
       value: { count: 2, problems: 1, builtAt: 5 },
     })
 
-    for (const type of ['probe', 'config/save', 'login', 'logout', 'lock', 'index/refresh', 'matches/tab']) {
+    for (const type of ['probe', 'config/get', 'config/save', 'login', 'logout', 'lock', 'index/refresh', 'matches/tab']) {
       const response = await route(d, { type, address: 'x', tabId: 1, input: { method: 'oidc' } }, content)
       expect(response).toMatchObject({ ok: false, error: { kind: 'forbidden_sender' } })
     }

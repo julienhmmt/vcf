@@ -159,6 +159,11 @@ export class BackgroundService {
     }
   }
 
+  /** Non-secret: the whole config is safe to expose to the UI as-is. */
+  getConfig(): Promise<ExtensionConfig | null> {
+    return this.stores.config()
+  }
+
   async saveConfig(input: unknown): Promise<Status> {
     const next = parseConfig(input)
     if (!(await this.platform.hasHostPermission(next.address))) {

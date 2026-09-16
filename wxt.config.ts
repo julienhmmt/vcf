@@ -4,6 +4,7 @@ import { defineConfig } from 'wxt'
 // the Vault host is requested at setup time, identity only for OIDC.
 export default defineConfig({
   srcDir: 'src',
+  modules: ['@wxt-dev/module-svelte'],
   manifestVersion: 3,
   manifest: ({ browser }) => ({
     name: 'VaultCredsFiller',
@@ -18,6 +19,9 @@ export default defineConfig({
               id: 'vaultcredsfiller@julienhmmt.github.io',
               // storage.session, optional_host_permissions, AbortSignal.any
               strict_min_version: '128.0',
+              // We only ever talk to the Vault/OpenBao server the user
+              // configures — nothing is collected or sent anywhere else.
+              data_collection_permissions: { required: ['none'] },
             },
           },
         }

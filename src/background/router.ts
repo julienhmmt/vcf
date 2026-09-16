@@ -10,6 +10,7 @@ import type { BackgroundService, LoginInput } from './service'
 export type Request =
   | { readonly type: 'status' }
   | { readonly type: 'probe'; readonly address: string; readonly namespace?: string }
+  | { readonly type: 'config/get' }
   | { readonly type: 'config/save'; readonly config: unknown }
   | { readonly type: 'login'; readonly input: LoginInput }
   | { readonly type: 'logout' }
@@ -54,6 +55,7 @@ type Origin = 'page' | 'content'
 const ALLOWED: Readonly<Record<Request['type'], readonly Origin[]>> = {
   status: ['page', 'content'],
   probe: ['page'],
+  'config/get': ['page'],
   'config/save': ['page'],
   login: ['page'],
   logout: ['page'],
@@ -87,6 +89,8 @@ async function dispatch(deps: RouterDeps, request: Request, origin: Origin, send
     }
     case 'probe':
       return service.probe(request.address, request.namespace)
+    case 'config/get':
+      return service.getConfig()
     case 'config/save':
       return service.saveConfig(request.config)
     case 'login':
@@ -167,6 +171,7 @@ export function parseRequest(message: unknown): Request {
   const m = record(message)
   switch (m.type) {
     case 'status':
+    case 'config/get':
     case 'logout':
     case 'lock':
     case 'index/refresh':
