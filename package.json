@@ -1,0 +1,26 @@
+{
+  "name": "vaultcredsfiller",
+  "version": "0.0.0",
+  "description": "Autofill credentials from HashiCorp Vault and OpenBao",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run test",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.20.3",
+    "@vitest/coverage-v8": "^5.0.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  },
+  "dependencies": {
+    "tldts": "^7.4.13"
+  },
+  "type": "module"
+}

@@ -1,0 +1,82 @@
+# Local Vault + OpenBao pair for developing and testing VaultCredsFiller.
+#
+#   docker compose -f dev/docker-compose.yml up -d --wait
+#   docker compose -f dev/docker-compose.yml logs seed-vault seed-openbao
+#   docker compose -f dev/docker-compose.yml down
+#
+# Both servers run in dev mode: in-memory storage, already unsealed,
+# root token `root`. Data is lost when a server restarts, so reset
+# with `down` + `up` rather than `restart`.
+#
+# The seed services load the fixtures, then stay up and report
+# healthy, so `up --wait` returns only once both servers are seeded.
+#
+# Not for anything but local development.
+
+name: vcf-dev
+
+x-seed: &seed
+  restart: "no"
+  init: true
+  entrypoint:
+    - /bin/sh
+    - -c
+    - /bin/sh /seed/seed.sh && touch /tmp/seeded && while :; do sleep 3600; done
+  volumes:
+    - ./seed:/seed:ro
+  healthcheck:
+    test: ["CMD", "test", "-f", "/tmp/seeded"]
+    interval: 1s
+    timeout: 1s
+    retries: 120
+
+services:
+  vault:
+    image: hashicorp/vault:${VAULT_VERSION:-2.1.0}
+    command: server -dev -dev-root-token-id=root -dev-listen-address=0.0.0.0:8200
+    cap_add: [IPC_LOCK]
+    environment:
+      VAULT_ADDR: http://127.0.0.1:8200
+    ports:
+      - "127.0.0.1:8200:8200"
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  openbao:
+    image: openbao/openbao:${OPENBAO_VERSION:-2.6.2}
+    command: server -dev -dev-root-token-id=root -dev-listen-address=0.0.0.0:8200
+    cap_add: [IPC_LOCK]
+    environment:
+      BAO_ADDR: http://127.0.0.1:8200
+    ports:
+      - "127.0.0.1:8300:8200"
+    healthcheck:
+      test: ["CMD", "bao", "status"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  seed-vault:
+    <<: *seed
+    image: hashicorp/vault:${VAULT_VERSION:-2.1.0}
+    environment:
+      CLI: vault
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: root
+    depends_on:
+      vault:
+        condition: service_healthy
+
+  seed-openbao:
+    <<: *seed
+    image: openbao/openbao:${OPENBAO_VERSION:-2.6.2}
+    environment:
+      CLI: bao
+      BAO_ADDR: http://openbao:8200
+      BAO_TOKEN: root
+    depends_on:
+      openbao:
+        condition: service_healthy
