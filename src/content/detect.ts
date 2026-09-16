@@ -87,10 +87,31 @@ export function findUsernameField(passwordEl: HTMLInputElement, scope: Element):
   return candidates[0] ?? null
 }
 
-/** A field for a one-time code, by the standard autofill hint only. */
+const OTP_NAME_PATTERN = /(?:^|[-_ ])(?:otp|totp|mfa|2fa)(?:[-_ ]|$)|one[-_ ]?time[-_ ]?code|verification[-_ ]?code/i
+
+function looksLikeOtpField(input: HTMLInputElement): boolean {
+  if (SKIP_TYPES.has(input.type) || input.type === 'password') return false
+  const haystack = `${input.name} ${input.id} ${input.placeholder}`
+  if (!OTP_NAME_PATTERN.test(haystack)) return false
+  // A guess based on the field's name still needs a numeric-ish shape
+  // to be trusted — otherwise a field merely named "..._code" (a
+  // coupon, a country code) would match.
+  const maxLength = input.maxLength
+  const numericHint = input.inputMode === 'numeric' || /^[0-9]*$/.test(input.pattern)
+  return numericHint || (maxLength > 0 && maxLength <= 10)
+}
+
+/**
+ * A field for a one-time code. The standard autofill hint
+ * (`autocomplete="one-time-code"`) is authoritative when present;
+ * otherwise a conservative name/placeholder + numeric-shape heuristic
+ * is used as a fallback, since most sites don't set the hint.
+ */
 export function findOtpField(scope: Element): HTMLInputElement | null {
-  const inputs = Array.from(scope.querySelectorAll<HTMLInputElement>('input[autocomplete]'))
-  return inputs.find((el) => el.autocomplete.toLowerCase() === 'one-time-code') ?? null
+  const inputs = Array.from(scope.querySelectorAll<HTMLInputElement>('input'))
+  const byHint = inputs.find((el) => el.autocomplete.toLowerCase() === 'one-time-code')
+  if (byHint) return byHint
+  return inputs.find(looksLikeOtpField) ?? null
 }
 
 /**

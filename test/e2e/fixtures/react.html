@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><title>React login</title></head>
+<body>
+  <div id="root"></div>
+  <script src="./vendor/react.production.min.js"></script>
+  <script src="./vendor/react-dom.production.min.js"></script>
+  <script>
+    // A genuinely controlled React form: `value` is always driven by
+    // state, `onChange` is the only path that's supposed to update
+    // it. `#mirror` reflects React's *own* state (not the DOM value
+    // directly) — proving it changed proves React actually noticed
+    // the fill, not just that the input looks filled.
+    const { useState, createElement: h } = React
+
+    function App() {
+      const [username, setUsername] = useState('')
+      const [password, setPassword] = useState('')
+      return h(
+        'form',
+        null,
+        h('input', {
+          type: 'text',
+          id: 'user',
+          autoComplete: 'username',
+          value: username,
+          onChange: (e) => setUsername(e.target.value),
+        }),
+        h('input', {
+          type: 'password',
+          id: 'pw',
+          value: password,
+          onChange: (e) => setPassword(e.target.value),
+        }),
+        h('span', { id: 'mirror' }, username + ':' + password),
+      )
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(h(App))
+  </script>
+  <script src="./vcf-content-core.js"></script>
+</body>
+</html>

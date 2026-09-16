@@ -114,6 +114,36 @@ describe('findOtpField', () => {
     expect(findOtpField(document.getElementById('f')!)?.id).toBe('otp')
   })
 
+  test('the autocomplete hint wins over a name-based guess', () => {
+    setBody(`
+      <form id="f">
+        <input id="guess" name="totp_code" inputmode="numeric">
+        <input id="hinted" autocomplete="one-time-code">
+      </form>
+    `)
+    expect(findOtpField(document.getElementById('f')!)?.id).toBe('hinted')
+  })
+
+  test('falls back to a numeric field named like an OTP field', () => {
+    setBody('<form id="f"><input id="code" name="totp_code" inputmode="numeric"></form>')
+    expect(findOtpField(document.getElementById('f')!)?.id).toBe('code')
+  })
+
+  test('falls back to a short maxlength field named like an OTP field', () => {
+    setBody('<form id="f"><input id="code" placeholder="Verification code" maxlength="6"></form>')
+    expect(findOtpField(document.getElementById('f')!)?.id).toBe('code')
+  })
+
+  test('ignores a name match with no numeric shape (e.g. a coupon code)', () => {
+    setBody('<form id="f"><input id="coupon" name="promo_code"></form>')
+    expect(findOtpField(document.getElementById('f')!)).toBeNull()
+  })
+
+  test('ignores a numeric field with no name/placeholder match (e.g. a phone number)', () => {
+    setBody('<form id="f"><input id="phone" name="phone" inputmode="numeric"></form>')
+    expect(findOtpField(document.getElementById('f')!)).toBeNull()
+  })
+
   test('returns null without one', () => {
     setBody('<form id="f"><input type="text"></form>')
     expect(findOtpField(document.getElementById('f')!)).toBeNull()

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><title>Shadow DOM login</title></head>
+<body>
+  <div id="host"></div>
+  <script>
+    const host = document.getElementById('host')
+    const shadow = host.attachShadow({ mode: 'open' })
+    shadow.innerHTML = `
+      <form>
+        <input type="text" autocomplete="username" id="user">
+        <input type="password" id="pw">
+      </form>
+    `
+  </script>
+  <script src="./vcf-content-core.js"></script>
+</body>
+</html>

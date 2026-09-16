@@ -16,9 +16,10 @@ with your own Vault as the backend.
 
 > **Status: early development.** The matching core, the Vault client,
 > the service worker, the Svelte UI and the content script are
-> implemented and tested — the full fill path works end to end.
-> Hardening (lock timeout, TOTP-field detection beyond the standard
-> autofill hint) is still ahead.
+> implemented and tested — the full fill path works end to end,
+> including in shadow DOM, cross-frame and React-controlled forms
+> (verified against real Chromium, not just jsdom). Not done yet:
+> extension icons, a linted/signed release build.
 
 ## How a secret is tagged
 
@@ -90,6 +91,7 @@ npm install
 npm run check          # typecheck + tests, what CI runs
 npm run test:watch     # vitest in watch mode
 npm run test:coverage
+npm run test:e2e       # content script against real Chromium, see below
 npm run build          # .output/chrome-mv3
 npm run build:firefox  # .output/firefox-mv3
 npm run dev            # Chrome with live reload
@@ -101,6 +103,28 @@ The message protocol between UI, content script and worker is in
 CI runs typecheck and tests on Node 22 and 24, enforces coverage
 thresholds on `src/`, and runs the integration suite against both
 servers.
+
+### Content script against a real browser
+
+`src/content/` is exercised by ordinary jsdom unit tests, but shadow
+DOM, cross-frame boundaries and framework-controlled inputs aren't
+faithfully reproducible there (see `src/content/inject.test.ts`'s own
+comment on why a plain `.value =` bug wouldn't show up in a
+static-HTML test). `test:e2e` bundles the actual `detect.ts`/
+`inject.ts` — not a re-implementation — into three fixture pages under
+`test/e2e/fixtures/` and runs them against real Chromium with
+Playwright: a form inside an open shadow root, one inside a same-
+origin iframe, and one driven by real React (vendored, not CDN-
+fetched, so this stays offline-reproducible):
+
+```sh
+npx playwright install chromium   # once
+npm run test:e2e
+```
+
+Needs a real browser download, which a restricted network may block
+(sandboxed dev environments included) — CI always runs it, since
+`actions/runner` images have full network access.
 
 ### Local Vault and OpenBao
 
@@ -147,8 +171,15 @@ it needs an IdP and is covered by unit tests only.
    SPA re-scan via MutationObserver), framework-safe value injection,
    an in-page badge for candidates/fill/downgrade-confirm next to the
    field itself, matching the popup's own picker
-6. **Hardening** — lock timeout, fill confirmation, scheme-downgrade
-   warnings
+6. **Hardening** — lock timeout, fill confirmation and scheme-
+   downgrade warnings landed as part of phases 3–5, not as separate
+   work; this phase added a broader OTP-field heuristic (name/
+   placeholder + numeric shape, not just the autofill hint) and
+   `test:e2e`: the same detect/inject code run against real Chromium
+   for shadow DOM, a same-origin iframe and a real React-controlled
+   form, since jsdom can't faithfully stand in for any of those three.
+   Left for an actual release: extension icons, `web-ext lint`,
+   store packaging (see `.claude/skills/extension-release`)
 
 ## Prior art
 

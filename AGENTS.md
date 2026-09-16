@@ -47,6 +47,11 @@ src/content/    # form-detection + fill content script — implemented
 docs/
   secret-schema.md
 dev/            # local Vault/OpenBao dev environment (docker-compose + seed scripts)
+test/e2e/       # detect.ts/inject.ts against real Chromium (shadow DOM,
+                #   iframe, React) — see README's "Content script against
+                #   a real browser"; not run by `npm run check`, needs
+                #   `npx playwright install chromium` (blocked on some
+                #   sandboxed/restricted networks, always runs in CI)
 ```
 
 `src/core` must stay free of any browser/extension API so it can be driven
@@ -63,13 +68,15 @@ npm run test            # vitest run
 npm run test:watch
 npm run test:coverage
 npm run test:integration   # needs dev/docker-compose.yml up
+npm run test:e2e           # content script vs real Chromium, needs the browser installed
 npm run build              # WXT, Chrome MV3; build:firefox for Firefox
 ```
 
 CI (`.github/workflows/ci.yml`) runs on Node 22 and 24, builds both
-browsers, enforces coverage thresholds on `src/`, and runs the integration
-suite against Vault and OpenBao. Build tooling is WXT (dev dependency only).
-Message protocol: `docs/messaging.md`.
+browsers, enforces coverage thresholds on `src/`, runs the content-script
+suite against real Chromium, and runs the integration suite against Vault
+and OpenBao. Build tooling is WXT (dev dependency only). Message protocol:
+`docs/messaging.md`.
 
 ## Skills
 

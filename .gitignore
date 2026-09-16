@@ -5,3 +5,6 @@ dist/
 *.log
 .output/
 .wxt/
+test/e2e/fixtures/vcf-content-core.js
+test-results/
+playwright-report/
