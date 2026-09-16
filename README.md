@@ -15,9 +15,10 @@ with your own Vault as the backend.
 - kv-v1 and kv-v2; userpass, AppRole, OIDC or a raw token
 
 > **Status: early development.** The matching core, the Vault client,
-> the service worker and the Svelte UI (popup, setup wizard, settings)
-> are implemented and tested. There is no content script yet, so
-> fills cannot be triggered from a real page.
+> the service worker, the Svelte UI and the content script are
+> implemented and tested — the full fill path works end to end.
+> Hardening (lock timeout, TOTP-field detection beyond the standard
+> autofill hint) is still ahead.
 
 ## How a secret is tagged
 
@@ -61,8 +62,15 @@ src/background/   # service worker logic, browser behind an interface
 src/ui/           # Svelte helpers shared by popup and options
   lib/              messaging, typed RPC calls, formatting, wizard draft
   components/       Unlock.svelte (shared login form)
+src/content/      # form detection and fill, isolated world, no messaging
+  detect.ts         password-field anchor, username/otp pairing, shadow DOM
+  inject.ts         framework-safe value injection (native setter + events)
+  watch.ts          debounced MutationObserver re-scan for SPA logins
+  badge.ts          in-page candidate list / fill / downgrade confirm
+  rpc.ts            the two messages a content script may send
 src/entrypoints/  # WXT entrypoints
   background.ts
+  autofill.content.ts  wires detect/watch/badge together per frame
   popup/            App.svelte, Picker.svelte (candidate list, fill)
   options/          App.svelte, Wizard.svelte (setup), Settings.svelte
 test/integration/ # against real servers, see below
@@ -135,7 +143,10 @@ it needs an IdP and is covered by unit tests only.
    pages, message-based RPC to the worker (never calling Vault
    directly), non-secret wizard draft persistence, permission
    request flow for the Vault host
-5. **Content script** — form detection and fill
+5. **Content script** — done: password-field detection (shadow DOM,
+   SPA re-scan via MutationObserver), framework-safe value injection,
+   an in-page badge for candidates/fill/downgrade-confirm next to the
+   field itself, matching the popup's own picker
 6. **Hardening** — lock timeout, fill confirmation, scheme-downgrade
    warnings
 

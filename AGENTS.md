@@ -18,9 +18,10 @@ changing it means rewriting the index builder and matcher together).
 ## Status
 
 Early development. Core matching (`src/core/`), the Vault client
-(`src/vault/`), the service worker (`src/background/`) and the Svelte UI
-(`src/ui/`, `src/entrypoints/popup`, `src/entrypoints/options`) are
-implemented and tested. Content script is not built yet. Check the
+(`src/vault/`), the service worker (`src/background/`), the Svelte UI
+(`src/ui/`, `src/entrypoints/popup`, `src/entrypoints/options`) and the
+content script (`src/content/`, `src/entrypoints/autofill.content.ts`)
+are implemented and tested — the fill path works end to end. Check the
 Roadmap section of `README.md` for current progress before assuming a
 piece exists.
 
@@ -36,11 +37,13 @@ src/vault/      # Vault/OpenBao HTTP client — implemented
   client.ts, http.ts, auth.ts, oidc.ts, kv.ts, mounts.ts, indexer.ts, errors.ts
 src/background/ # MV3 service worker logic — implemented; browser APIs only
                 #   in browser-platform.ts, everything else behind Platform
-src/entrypoints/# WXT entrypoints: background.ts, popup/, options/
+src/entrypoints/# WXT entrypoints: background.ts, autofill.content.ts, popup/, options/
 src/ui/         # Svelte popup/options — implemented
   lib/            messaging, typed rpc, formatting, wizard draft (no secrets)
   components/     Unlock.svelte, shared by popup and the setup wizard
-src/content/    # form-detection + fill content script (planned)
+src/content/    # form-detection + fill content script — implemented
+  detect.ts, inject.ts, watch.ts, badge.ts, rpc.ts — pure DOM logic,
+  no `chrome.*` outside rpc.ts's `browser.runtime.sendMessage`
 docs/
   secret-schema.md
 dev/            # local Vault/OpenBao dev environment (docker-compose + seed scripts)
