@@ -1,0 +1,1 @@
+var e=globalThis.browser?.runtime?.id?globalThis.browser:globalThis.chrome,t=e,n=function(e){return e[e.Exact=40]=`Exact`,e[e.Host=30]=`Host`,e[e.Subdomain=20]=`Subdomain`,e[e.Domain=10]=`Domain`,e}({});function r(){}export{e as i,n,t as r,r as t};
